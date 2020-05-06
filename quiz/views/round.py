@@ -57,8 +57,8 @@ class EditRoundView(LoginRequiredMixin, View):
         quiz_wrapper = get_quiz_or_404(request.user, quiz_id)
         round_wrapper = get_round_or_404(quiz_wrapper.quiz, round_id)
         round_info = filter_round_info(request.POST)
-        round_wrapper.edit(round_info)
-        return redirect('quiz:edit-quiz', quiz_id=quiz_id, round_id=round_id)
+        round_wrapper.edit(round_id, round_info)
+        return redirect('quiz:edit-round', quiz_id=quiz_id, round_id=round_id)
 
 
 class DeleteRoundView(LoginRequiredMixin, View):

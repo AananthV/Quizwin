@@ -9,6 +9,9 @@ from quiz.classes.question import delete_question
 from quiz.constants import RoundType
 
 class BaseRound:
+
+    editable_fields = ['name']
+
     def __init__(self, round):
         self.round = round
         self.questions = Question.objects.filter(round=self.round)
@@ -106,4 +109,4 @@ def delete_round(round):
     rounds[round.type](round).delete()
 
 def filter_round_info(round_info):
-    return { key:value for key, value in round_info.items() if key in Round.editable_fields }
+    return { key:value for key, value in round_info.items() if key in BaseRound.editable_fields }

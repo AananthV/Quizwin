@@ -7,18 +7,18 @@
     <form action="{% url 'quiz:edit-round' quiz_id=quiz.id round_id=round.id %}" method="POST">{% csrf_token %}
         <div class="form-group">
             <label for="round-name-input">Round Name</label>
-            <input name="round-name" type="text" class="form-control" id="round-name-input" value="{{ round.name }}">
+            <input name="name" type="text" class="form-control" id="round-name-input" value="{{ round.name }}">
         </div>
         <div class="form-group">
             <label for="round-type-input">Round Type</label>
-            <input name="round-type" type="text" class="form-control" id="round-type-input" disabled value="{{ round.type }}">
+            <input name="type" type="text" class="form-control" id="round-type-input" disabled value="{{ round.type }}">
         </div>
         <div class="form-group">
             <label for="round-number-input">Round Number</label>
             {% if round.round_number %}
-                <input name="round-number" type="number" class="form-control" id="round-number-input" disabled value="{{ round.round_number }}">
+                <input name="round_number" type="number" class="form-control" id="round-number-input" disabled value="{{ round.round_number }}">
             {% else %}
-                <input name="round-number" type="number" class="form-control" id="round-number-input" value="{{ round.round_number }}">
+                <input name="round_number" type="number" class="form-control" id="round-number-input" value="{{ round.round_number }}">
             {% endif %}
         </div>
         <div class="form-action">
