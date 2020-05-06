@@ -65,7 +65,7 @@ class DeleteQuizView(LoginRequiredMixin, View):
         '''
         quiz_wrapper = get_quiz_or_404(request.user, quiz_id)
 
-        quiz_wrapper.delete()
+        quiz_wrapper.quiz.delete()
 
         # TODO: Have some kinda notification in dashboard, "successfully deleted" etc
         return redirect('quiz:profile') 

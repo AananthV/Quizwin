@@ -16,8 +16,8 @@ class Quiz(TimestampModel):
 class Round(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     type = models.CharField(max_length=1, choices=RoundType.choices)
-    name = models.CharField(max_length=64)
-    round_number = models.IntegerField()
+    name = models.CharField(max_length=64, default='Untitled Round')
+    round_number = models.IntegerField(default=1)
 
     class Meta:
         order_with_respect_to = 'round_number'
@@ -36,6 +36,7 @@ class Question(models.Model):
     round = models.ForeignKey(Round, on_delete=models.CASCADE)
     question_number = models.IntegerField(null=True)
     category = models.TextField(null=True)
+    description = models.CharField(max_length=255, null=True)
     type = models.TextField(max_length=1, choices=QuestionType.choices)
     slides = models.IntegerField(default=1)
     points = models.IntegerField()

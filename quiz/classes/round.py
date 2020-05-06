@@ -1,4 +1,6 @@
 from collections import defaultdict
+from django.shortcuts import get_object_or_404
+from django.db.models import Max
 
 from django.forms import model_to_dict
 
@@ -28,6 +30,13 @@ class BaseRound:
     def delete(self):
         [delete_question(q) for q in self.questions]
         self.round.delete()
+    
+    @staticmethod
+    def get_greatest_round(quiz):
+        if Round.objects.filter(quiz=quiz).exists():
+            greatest_round = Round.objects.filter(quiz=quiz).aggregate(Max('round_number'))
+            return greatest_round['round_number__max'] + 1
+        return 1
 
 class SequentialRound(BaseRound):
     def __init__(self, round):
@@ -38,6 +47,14 @@ class SequentialRound(BaseRound):
         info = super().info()
         info['questions'] = [model_to_dict(q) for q in self.questions]
         return info
+    
+    def edit_info(self):
+        round = super().base_info()
+        round['type'] = 'SEQUENTIAL'
+        return {
+           **round,
+           'questions':  [model_to_dict(q) for q in self.questions]
+        }
 
     # TODO depending on how sockets work
     def next_question(self):
@@ -57,6 +74,13 @@ class BoardRound(BaseRound):
         info['questions'] = questions
 
         return info
+    
+    def edit_info(self):
+        info = self.info()
+        info['type'] = 'BOARD'
+        return {
+           **info 
+        }
 
 rounds = {
     RoundType.SEQUENTIAL: SequentialRound,
@@ -64,14 +88,22 @@ rounds = {
 }
 
 def get_round(round):
-    print(round.type)
     return rounds[round.type](round)
 
-def create_round(round_info):
-    return rounds[round_info.type].create(round_info)
+def get_round_or_404(quiz, round_id):
+    round = get_object_or_404(Round, pk=round_id, quiz=quiz)
+    return rounds[round.type](round)
+
+def create_round(quiz, round_info = {}):
+    round_info['quiz'] = quiz.quiz
+    round_info['round_number'] = rounds[round_info['type']].get_greatest_round(quiz.quiz)
+    return rounds[round_info['type']].create(round_info)
 
 def edit_round(round_id, round_info):
     return rounds[round_info.type].edit(round_id, round_info)
 
 def delete_round(round):
     rounds[round.type](round).delete()
+
+def filter_round_info(round_info):
+    return { key:value for key, value in round_info.items() if key in Round.editable_fields }

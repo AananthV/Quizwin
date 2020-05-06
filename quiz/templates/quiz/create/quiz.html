@@ -44,15 +44,19 @@
                     <td>{{ round.name }}</td>
                     <td>{{ round_types|lookup:round.type }}</td>
                     <td>
-                        <a class="badge badge-info" href="{% url 'quiz:edit-round' quiz_id=quiz.id round_id=round.id %}">Edit</a>
-                        <a class="badge badge-danger" href="{% url 'quiz:delete-round' quiz_id=quiz.id round_id=round.id %}">Delete</a>
+                        <form class="mt-1" action="{% url 'quiz:edit-round' quiz_id=quiz.id round_id=round.id %}" method="GET">{% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-block">Edit</button>
+                        </form>
+                        <form class="mt-1" action="{% url 'quiz:delete-round' quiz_id=quiz.id round_id=round.id %}" method="POST">{% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-block">Delete</button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
     <form class="form-inline" action="{% url 'quiz:create-round' quiz_id=quiz.id %}" method="POST">{% csrf_token %}
-        <select class="custom-select my-1 mr-sm-2" id="round-type-select" required>
+        <select class="custom-select my-1 mr-sm-2" name="round_type" id="round-type-select" required>
             <option value="" selected>Round type</option>
             {% for value, label in round_types.items %}
                 <option value="{{ value }}">{{ label }}</option>
