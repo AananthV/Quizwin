@@ -1,3 +1,5 @@
+from enum import Enum
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -13,3 +15,7 @@ class QuestionType(models.TextChoices):
 class SlideType(models.TextChoices):
     TEXT = 'T', _('Text')
     IMAGE = 'I', _('Image')
+
+class QuestionClass(Enum):
+    SINGLE_ANSWER = 'S'
+    CHOICE_ANSWER = 'C'

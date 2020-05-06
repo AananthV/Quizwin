@@ -36,6 +36,10 @@ class TextSlide(BaseSlide):
         text_field = Text.objects.create(text=text)
         return BaseSlide.create('T', text_field.id)
 
+    def edit(text):
+        self.text.text = text
+        self.text.save()
+
     def delete(self):
         super().delete()
         self.text.delete()
@@ -59,6 +63,10 @@ class ImageSlide(BaseSlide):
         image_field = Image.objects.create(image=image)
         return BaseSlide.create('I', image_field.id)
 
+    def edit(image):
+        self.image.image = image
+        self.image.save()
+
     def delete(self):
         super().delete()
         self.image.delete()
@@ -72,4 +80,8 @@ def get_slide(slide):
     return slides[slide.type](slide)
 
 def create_slide(slide_info):
+    if 'type' not in slide_info or slide_info['type'] not in slides.values:
+        slide_info['type'] = SlideType.TEXT
+    if 'info' not in slide_info:
+        slide_info['info'] = ''
     return slides[slide_info.type].create(slide_info.info)

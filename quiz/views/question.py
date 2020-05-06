@@ -1,19 +1,11 @@
 from django.views import View
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from quiz.mixins.requires_login import LoginRequiredMixin
+from quiz.classes.question import create_question_or_404, filter_question_info, get_question_or_404
 
 
 class CreateQuestionView(LoginRequiredMixin, View):
-
-    def get(self, request, quiz_id, round_id):
-        '''
-        Render the form to create a question
-        Attributes:
-            None
-        '''
-        context = {}
-        return render(request, 'quiz/create/question.html', context)
     
     def post(self, request, quiz_id, round_id):
         '''
@@ -21,8 +13,10 @@ class CreateQuestionView(LoginRequiredMixin, View):
         Attributes:
             none.
         '''
-        return {}
+        question_info = filter_question_info(request.POST)
+        question = create_question_or_404(request.user, quiz_id, round_id, question_info)
 
+        return redirect('quiz:edit-question', quiz_id=quiz_id, round_id=round_id, question_id=question.id)
 
 class EditQuestionView(LoginRequiredMixin, View):
 
@@ -32,7 +26,11 @@ class EditQuestionView(LoginRequiredMixin, View):
         Attributes:
             None
         '''
-        context = {}
+        question_wrapper = get_question_or_404(request.user, quiz_id, round_id, question_id)
+        context = {
+            'question': question_wrapper.info()
+        }
+        return context
         return render(request, 'quiz/create/question.html', context)
 
     def post(self, request, quiz_id, round_id, question_id):
@@ -45,7 +43,6 @@ class EditQuestionView(LoginRequiredMixin, View):
                 - question_info
         ''' 
         return {}
-
 
 class DeleteQuestionView(LoginRequiredMixin, View):
 
