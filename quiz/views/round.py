@@ -53,7 +53,7 @@ class EditRoundView(LoginRequiredMixin, View):
         ''' 
         round_wrapper = get_round_or_404(request.user, quiz_id, round_id)
 
-        round_info = filter_round_info(request.POST)
+        round_info = filter_round_info(request.POST.copy())
 
         round_wrapper.edit(round_info)
 

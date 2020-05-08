@@ -117,8 +117,10 @@ class NormalQuestion(BaseQuestion):
         else:
             return None
 
-    def award_points(self, user):
+    def award_points(self, user, sign=True):
         question_score = self.question.points * self.question.multiplier
+        if not sign:
+            question_score = -question_score
         super().award_points(user, question_score)
 
     def set_answer(self, answer_info):
@@ -159,6 +161,18 @@ class ChoiceQuestion(BaseQuestion):
 
         self.choices = Choice.objects.filter(question=self.question)
         self.choice_slides = [get_slide(choice.slide) for choice in self.choices]
+
+    def award_points(self, user, sign=True):
+        question_points = self.question.points * self.question.multiplier
+        
+        num_answered = QuestionScores.objects.filter(question=question).count()
+
+        if sign:
+            question_points *= (1 - self.question.round.degradation) ** num_answered
+        else:
+            question_points = -question_points
+
+        super().award_points(user, question_points)
 
     def host_info(self):
         info = super().host_info()
@@ -219,17 +233,7 @@ class MCQuestion(ChoiceQuestion):
             return None
 
     def award_points(self, user, answer):
-        question_points = self.question.points * self.question.multiplier
-        
-        num_answered = QuestionScores.objects.filter(question=question).count()
-
-        if answer == self.answer:
-            degradation = self.question.degradation ** num_answered
-        else:
-            degradation = - ((1 - self.question.degradation) ** num_answered)
-
-        question_points = question_points * degradation
-        super().award_points(user, question_points)
+        super().award_points(user, answer == self.answer)
 
     def set_answer(self, answer_info):
         try:
@@ -254,26 +258,16 @@ class OrderQuestion(ChoiceQuestion):
 
         self.order_answer = OrderAnswer.objects.filter(question=self.question)
         if self.order_answer.exists():
-            self.answer = [int(x) for x in self.order_answer[0].order.split(',')]
+            self.answer = self.order_answer[0].order
 
     def answer_info(self):
         if self.order_answer.exists():
-            return self.answer
+            return [int(x) for x in self.answer.split(',')]
         else:
             return None
     
     def award_points(self, user, answer):
-        question_points = self.question.points * self.question.multiplier
-        
-        num_answered = QuestionScores.objects.filter(question=question).count()
-
-        if answer == self.answer:
-            degradation = self.question.degradation ** num_answered
-        else:
-            degradation = - ((1 - self.question.degradation) ** num_answered)
-
-        question_points = question_points * degradation
-        super().award_points(user, question_points)
+        super.award_points(user, answer == self.answer)
 
     def delete_choice(self, choice_id):
         super().delete_choice(choice_id)

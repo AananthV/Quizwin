@@ -11,7 +11,7 @@ from quiz.models import Category, Question, Quiz, Round
 
 class BaseRound:
 
-    editable_fields = ['name']
+    editable_fields = ['name', 'degradation']
 
     def __init__(self, round):
         self.round = round
@@ -142,4 +142,6 @@ def delete_round(round):
     rounds[round.type](round).delete()
 
 def filter_round_info(round_info):
+    if 'degradation' in round_info:
+        round_info['degradation'] = min(1, max(0, float(round_info['degradation'])))
     return { key:value for key, value in round_info.items() if key in BaseRound.editable_fields }

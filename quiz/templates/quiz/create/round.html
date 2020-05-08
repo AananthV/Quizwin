@@ -19,7 +19,7 @@
             <input name="name" type="text" class="form-control" id="round-name-input" value="{{ round.name }}">
             <small>The name of this round</small>
         </div>
-        <div class="form-group">
+        {% comment %} <div class="form-group">
             <label for="round-type-input">Round Type</label>
             <input name="type" type="text" class="form-control" id="round-type-input" disabled value="{{ round.type }}">
         </div>
@@ -30,7 +30,12 @@
             {% else %}
                 <input name="round_number" type="number" class="form-control" id="round-number-input" value="{{ round.round_number }}">
             {% endif %}
-        </div>
+        </div> {% endcomment %}
+        <div class="form-group">
+            <label for="round-degradation-input">Round Degradation</label>
+            <input name="degradation" type="number" min="0" max="1" step="0.05" class="form-control" id="round-degradation-input" value="{{ round.degradation }}">
+            <small>Learn More</small>
+        </div>        
         <div class="form-action">
             <button type="submit" class="btn btn-info">Save</button>
         </div>

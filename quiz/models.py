@@ -17,6 +17,7 @@ class Round(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     type = models.CharField(max_length=1, choices=RoundType.choices)
     name = models.CharField(max_length=64, default='Untitled Round')
+    degradation = models.FloatField(default=0)
     round_number = models.IntegerField(default=1)
 
     class Meta:
@@ -44,7 +45,6 @@ class Question(models.Model):
     type = models.TextField(max_length=1, choices=QuestionType.choices)
     # slides = models.IntegerField(default=1)
     points = models.IntegerField(default=0)
-    degradation = models.FloatField(default=0)
     multiplier = models.FloatField(default=1)
     done = models.BooleanField(default=False)
 
