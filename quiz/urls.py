@@ -6,7 +6,7 @@ from quiz.views import join, profile, quiz, round, category, question, slide, an
 urlpatterns = [
     path('', join.JoinView.as_view(), name="join"),
 
-    path('accounts/profile/', profile.ProfileView.as_view(), name='profile'),
+    path('profile/', profile.ProfileView.as_view(), name='profile'),
 
     # Quiz
     path('create/quiz/', quiz.CreateQuizView.as_view(), name="create-quiz"),
