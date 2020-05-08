@@ -1,0 +1,16 @@
+<form class="form"
+    {% if edit_type == 'ANSWER' %}
+        action="{% url 'quiz:edit-answer' quiz_id=quiz_id round_id=round_id question_id=question_id answer_id=answer.id %}" 
+    {% elif edit_type == 'CHOICE' %}
+        action="{% url 'quiz:edit-choice' quiz_id=quiz_id round_id=round_id question_id=question_id choice_id=choice.id %}"
+    {% else %}
+        action="{% url 'quiz:edit-slide' quiz_id=quiz_id round_id=round_id question_id=question_id slide_id=qs.id %}" 
+    {% endif %}
+     method="POST">{% csrf_token %}
+    {% if slide.type == SlideType.TEXT %}
+        {% include "./edit/text.html" %}
+    {% elif slide.type == SlideType.IMAGE %}
+        {% include "./edit/image.html" %}
+    {% endif %}
+    <button type="submit" class="btn btn-info">Save</button>
+</form>

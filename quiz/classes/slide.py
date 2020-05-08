@@ -1,3 +1,5 @@
+from django.forms import model_to_dict
+
 from quiz.models import Text, Image, Slide
 from quiz.constants import SlideType
 
@@ -6,9 +8,7 @@ class BaseSlide:
         self.slide = slide
 
     def info(self):
-        return {
-            'type': self.slide.type
-        }
+        return model_to_dict(self.slide)
     
     @staticmethod
     def create(type, fk):
@@ -36,7 +36,7 @@ class TextSlide(BaseSlide):
         text_field = Text.objects.create(text=text)
         return BaseSlide.create('T', text_field.id)
 
-    def edit(text):
+    def edit(self, text):
         self.text.text = text
         self.text.save()
 
@@ -63,7 +63,7 @@ class ImageSlide(BaseSlide):
         image_field = Image.objects.create(image=image)
         return BaseSlide.create('I', image_field.id)
 
-    def edit(image):
+    def edit(self, image):
         self.image.image = image
         self.image.save()
 
@@ -80,8 +80,8 @@ def get_slide(slide):
     return slides[slide.type](slide)
 
 def create_slide(slide_info):
-    if 'type' not in slide_info or slide_info['type'] not in slides.values:
+    if 'type' not in slide_info or slide_info['type'] not in SlideType.values:
         slide_info['type'] = SlideType.TEXT
     if 'info' not in slide_info:
         slide_info['info'] = ''
-    return slides[slide_info.type].create(slide_info.info)
+    return slides[slide_info['type']].create(slide_info['info'])

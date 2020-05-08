@@ -2,10 +2,9 @@ from django.views import View
 from django.shortcuts import render, redirect
 
 from quiz.mixins.requires_login import LoginRequiredMixin
-from quiz.classes.round import create_round, get_round_or_404, filter_round_info
+from quiz.classes.round import create_round_or_404, get_round_or_404, filter_round_info
 from quiz.classes.quiz import get_quiz_or_404
-from quiz.classes.quiz import get_quiz_or_404
-from quiz.constants import QuestionType
+from quiz.constants import QuestionType, RoundType
 
 class CreateRoundView(LoginRequiredMixin, View):
     
@@ -15,15 +14,12 @@ class CreateRoundView(LoginRequiredMixin, View):
         Attributes:
             body containing round_info
         '''
-        quiz_wrapper = get_quiz_or_404(request.user, quiz_id)
         round_info = {
-            'type': request.POST.get('round_type')
+            'type': request.POST.get('type')
         }
-        round = create_round(quiz_wrapper, round_info)
-        context = {
-            'quiz_id': quiz_id,
-            'round_id': round.id
-        }
+
+        round = create_round_or_404(request.user, quiz_id, round_info)
+
         return redirect('quiz:edit-round', quiz_id=quiz_id, round_id=round.id)
 
 
@@ -35,13 +31,14 @@ class EditRoundView(LoginRequiredMixin, View):
         Attributes:
             None
         '''
-        quiz_wrapper = get_quiz_or_404(request.user, quiz_id)
-        round_wrapper = get_round_or_404(quiz_wrapper.quiz, round_id)
+        round_wrapper = get_round_or_404(request.user, quiz_id, round_id)
 
         context = {
-            'quiz': quiz_wrapper.edit_info(),
+            'quiz_id': quiz_id,
+            'round_id': round_id,
             'round': round_wrapper.edit_info(),
-            'question_types': dict(QuestionType.choices)
+            'question_types': dict(QuestionType.choices),
+            'RoundType': RoundType
         }
         return render(request, 'quiz/create/round.html', context)
 
@@ -54,10 +51,12 @@ class EditRoundView(LoginRequiredMixin, View):
             POST:
                 - round_info
         ''' 
-        quiz_wrapper = get_quiz_or_404(request.user, quiz_id)
-        round_wrapper = get_round_or_404(quiz_wrapper.quiz, round_id)
+        round_wrapper = get_round_or_404(request.user, quiz_id, round_id)
+
         round_info = filter_round_info(request.POST)
-        round_wrapper.edit(round_id, round_info)
+
+        round_wrapper.edit(round_info)
+
         return redirect('quiz:edit-round', quiz_id=quiz_id, round_id=round_id)
 
 
@@ -70,9 +69,8 @@ class DeleteRoundView(LoginRequiredMixin, View):
             PARAMS:
                 - quiz_id, round_id
         '''
-        quiz_wrapper = get_quiz_or_404(request.user, quiz_id)
-        round_wrapper = get_round_or_404(quiz_wrapper.quiz, round_id)
+        round_wrapper = get_round_or_404(request.user, quiz_id, round_id)
 
-        round_wrapper.round.delete()
+        round_wrapper.delete()
 
         return redirect('quiz:edit-quiz', quiz_id=quiz_id)   

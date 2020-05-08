@@ -1,0 +1,5 @@
+{% if slide.type == SlideType.TEXT %}
+    {% include "./view/text.html" %}
+{% elif slide.type == SlideType.IMAGE %}
+    {% include "./view/image.html" %}
+{% endif %}

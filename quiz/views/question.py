@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 
 from quiz.mixins.requires_login import LoginRequiredMixin
 from quiz.classes.question import create_question_or_404, filter_question_info, get_question_or_404
-
+from quiz.constants import QuestionClass, QuestionType, SlideType
 
 class CreateQuestionView(LoginRequiredMixin, View):
     
@@ -13,7 +13,7 @@ class CreateQuestionView(LoginRequiredMixin, View):
         Attributes:
             none.
         '''
-        question_info = filter_question_info(request.POST)
+        question_info = filter_question_info(request.POST.copy())
         question = create_question_or_404(request.user, quiz_id, round_id, question_info)
 
         return redirect('quiz:edit-question', quiz_id=quiz_id, round_id=round_id, question_id=question.id)
@@ -28,9 +28,18 @@ class EditQuestionView(LoginRequiredMixin, View):
         '''
         question_wrapper = get_question_or_404(request.user, quiz_id, round_id, question_id)
         context = {
-            'question': question_wrapper.info()
+            'quiz_id': quiz_id,
+            'round_id': round_id,
+            'question_id': question_id,
+            'question': question_wrapper.host_info(),
+            'question_types': dict(QuestionType.choices),
+            'slide_types': dict(SlideType.choices),
+            'QuestionClass': QuestionClass,
+            'QuestionType': QuestionType,
+            'SlideType': SlideType,
         }
-        return context
+        # print(context)
+        # return context
         return render(request, 'quiz/create/question.html', context)
 
     def post(self, request, quiz_id, round_id, question_id):
@@ -42,7 +51,13 @@ class EditQuestionView(LoginRequiredMixin, View):
             POST:
                 - question_info
         ''' 
-        return {}
+        question_wrapper = get_question_or_404(request.user, quiz_id, round_id, question_id)
+
+        question_info = filter_question_info(request.POST.copy())
+
+        question_wrapper.edit(question_info)
+
+        return redirect('quiz:edit-question', quiz_id=quiz_id, round_id=round_id, question_id=question_id)
 
 class DeleteQuestionView(LoginRequiredMixin, View):
 
@@ -53,4 +68,8 @@ class DeleteQuestionView(LoginRequiredMixin, View):
             PARAMS:
                 - quiz_id, round_id, question_id
         '''
-        return {}   
+        question_wrapper = get_question_or_404(request.user, quiz_id, round_id, question_id)
+
+        question_wrapper.delete()
+
+        return redirect('quiz:edit-round', quiz_id=quiz_id, round_id=round_id)

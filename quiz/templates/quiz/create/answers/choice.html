@@ -1,0 +1,45 @@
+<h2>Choices</h2>
+<table class="table table-hover table-responsive-sm">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Info</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for choice in choices %}
+            <tr>
+                <th scope="row">{{ choice.choice_number }}</th>
+                <td>
+                    <div class="collapse show choice-{{ choice.id }}-collapse" id="choice-{{ choice.id }}-view">
+                        {% include '../slides/view.html' with slide=choice.slide %}
+                    </div>
+                    <div class="collapse choice-{{ choice.id }}-collapse" id="choice-{{ choice.id }}-edit">
+                        {% include '../slides/edit.html' with slide=choice.slide edit_type='CHOICE' %}
+                    </div>
+                </td>
+                <td>
+                    <form id="choice-{{ choice.id }}-delete" class="col-6" action="{% url 'quiz:delete-choice' quiz_id=quiz_id round_id=round_id question_id=question_id choice_id=choice.id %}" method="POST">{% csrf_token %}</form>
+                    <button type="button" class="btn badge badge-info" data-toggle="collapse" data-target=".choice-{{ choice.id }}-collapse">Edit</button>
+                    <button type="submit" form="choice-{{ choice.id }}-delete" class="btn badge badge-danger">Delete</button>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<form class="form-inline" action="{% url 'quiz:create-choice' quiz_id=quiz_id round_id=round_id question_id=question_id %}" method="POST">{% csrf_token %}
+    <select class="custom-select my-1 mr-sm-2" name="type" id="choice-type-select" required>
+        <option value="" selected>Choice type</option>
+        {% for value, label in slide_types.items %}
+            <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-info">Add Choice</button>
+</form>
+<hr>
+{% if question.type == QuestionType.MCQ %}
+    {% include "./mcq.html" %}
+{% elif question.type == QuestionType.ORDERING %}
+    {% include "./ordering.html" %}
+{% endif %}

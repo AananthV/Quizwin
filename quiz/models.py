@@ -22,6 +22,10 @@ class Round(models.Model):
     class Meta:
         ordering = ['round_number']
 
+class Category(models.Model):
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    name = models.TextField(max_length=64)
+
 class Text(models.Model):
     text = models.TextField(max_length=512)
 
@@ -35,11 +39,11 @@ class Slide(models.Model):
 class Question(models.Model):
     round = models.ForeignKey(Round, on_delete=models.CASCADE)
     question_number = models.IntegerField(null=True)
-    category = models.TextField(null=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
     description = models.CharField(max_length=255, null=True)
     type = models.TextField(max_length=1, choices=QuestionType.choices)
     # slides = models.IntegerField(default=1)
-    points = models.IntegerField()
+    points = models.IntegerField(default=0)
     degradation = models.FloatField(default=0)
     multiplier = models.FloatField(default=1)
     done = models.BooleanField(default=False)
@@ -70,7 +74,7 @@ class ChoiceAnswer(models.Model):
 
 class OrderAnswer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    order = models.IntegerField()
+    order = models.TextField(max_length=32)
 
 class QuestionScores(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)

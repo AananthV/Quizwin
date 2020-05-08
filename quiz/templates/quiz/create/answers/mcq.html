@@ -1,0 +1,10 @@
+<h2>Answer</h2>
+<form class="form-inline" action="{% url 'quiz:create-answer' quiz_id=quiz_id round_id=round_id question_id=question_id %}" method="POST">{% csrf_token %}
+    <select class="custom-select my-1 mr-sm-2" name="choice_id" id="choice-answer-select" required>
+        <option value="" selected>Choice Number</option>
+        {% for choice in choices %}
+            <option value="{{ choice.id }}" {% if choice.choice_number == question.answer %} selected {% endif %}>{{ choice.choice_number }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-info">Set Answer</button>
+</form>

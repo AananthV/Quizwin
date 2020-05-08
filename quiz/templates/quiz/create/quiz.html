@@ -44,19 +44,17 @@
                     <td>{{ round.name }}</td>
                     <td>{{ round_types|lookup:round.type }}</td>
                     <td>
-                        <form class="mt-1" action="{% url 'quiz:edit-round' quiz_id=quiz.id round_id=round.id %}" method="GET">{% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-block">Edit</button>
-                        </form>
-                        <form class="mt-1" action="{% url 'quiz:delete-round' quiz_id=quiz.id round_id=round.id %}" method="POST">{% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-block">Delete</button>
-                        </form>
+                        <form id="round-{{ round.id }}-edit" class="d-none" action="{% url 'quiz:edit-round' quiz_id=quiz.id round_id=round.id %}" method="GET"/></form>
+                        <form id="round-{{ round.id }}-delete" class="col-6" action="{% url 'quiz:delete-round' quiz_id=quiz.id round_id=round.id %}" method="POST">{% csrf_token %}</form>
+                        <button form="round-{{ round.id }}-edit" type="submit" class="btn badge badge-info">Edit</button>
+                        <button form="round-{{ round.id }}-delete" type="submit" class="btn badge badge-danger">Delete</button>
                     </td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
     <form class="form-inline" action="{% url 'quiz:create-round' quiz_id=quiz.id %}" method="POST">{% csrf_token %}
-        <select class="custom-select my-1 mr-sm-2" name="round_type" id="round-type-select" required>
+        <select class="custom-select my-1 mr-sm-2" name="type" id="round-type-select" required>
             <option value="" selected>Round type</option>
             {% for value, label in round_types.items %}
                 <option value="{{ value }}">{{ label }}</option>

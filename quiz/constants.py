@@ -16,6 +16,6 @@ class SlideType(models.TextChoices):
     TEXT = 'T', _('Text')
     IMAGE = 'I', _('Image')
 
-class QuestionClass(Enum):
+class QuestionClass(models.TextChoices):
     SINGLE_ANSWER = 'S'
     CHOICE_ANSWER = 'C'

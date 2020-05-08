@@ -3,30 +3,58 @@ from django.shortcuts import redirect
 
 from quiz.mixins.requires_login import LoginRequiredMixin
 from quiz.classes.question import get_question_or_404
-from quiz.constants import SlideType
+from quiz.constants import QuestionType, SlideType, QuestionClass
 
-class CreateSlideView(LoginRequiredMixin, View):
+class CreateChoiceView(LoginRequiredMixin, View):
 
     def post(self, request, quiz_id, round_id, question_id):
         '''
-        Create a slide
+        Create a choice
         Attributes:
             PARAMS:
                 - quiz_id
                 - round_id
                 - question_id
             POST:
-                - type
+                - choice_info
         '''
         question_wrapper = get_question_or_404(request.user, quiz_id, round_id, question_id)
 
-        question_wrapper.create_slide(request.POST.copy())
+        if not question_wrapper.question_class == QuestionClass.CHOICE_ANSWER:
+            # TODO: Return exception
+            pass
+        
+        question_wrapper.add_choice(request.POST.copy())
 
         return redirect('quiz:edit-question', quiz_id=quiz_id, round_id=round_id, question_id=question_id)
 
-class EditSlideView(LoginRequiredMixin, View):
+class EditChoiceView(LoginRequiredMixin, View):
 
-    def post(self, request, quiz_id, round_id, question_id, slide_id):
+    def post(self, request, quiz_id, round_id, question_id, choice_id):
+        '''
+        Edit answer
+        Attributes:
+            PARAMS:
+                - quiz_id
+                - round_id
+                - question_id
+                - choice_id
+            POST:
+                - choice_info
+        '''
+        question_wrapper = get_question_or_404(request.user, quiz_id, round_id, question_id)
+
+        if not question_wrapper.question_class == QuestionClass.CHOICE_ANSWER:
+            # TODO: Return exception
+            pass
+
+        question_wrapper.edit_choice(choice_id, request.POST.copy())
+
+        return redirect('quiz:edit-question', quiz_id=quiz_id, round_id=round_id, question_id=question_id)
+
+class DeleteChoiceView(LoginRequiredMixin, View):
+
+    def post(self, request, quiz_id, round_id, question_id, choice_id):
         '''
         Edit a slide
         Attributes:
@@ -34,30 +62,14 @@ class EditSlideView(LoginRequiredMixin, View):
                 - quiz_id
                 - round_id
                 - question_id
-            POST:
-                - slide_info
+                - choice_id
         '''
         question_wrapper = get_question_or_404(request.user, quiz_id, round_id, question_id)
 
-        slide_info = request.POST.get('info', '')
+        if not question_wrapper.question_class == QuestionClass.CHOICE_ANSWER:
+            # TODO: Return exception
+            pass
 
-        question_wrapper.edit_slide(slide_id, slide_info)
-
-        return redirect('quiz:edit-question', quiz_id=quiz_id, round_id=round_id, question_id=question_id)
-
-class DeleteSlideView(LoginRequiredMixin, View):
-
-    def post(self, request, quiz_id, round_id, question_id, slide_id):
-        '''
-        Edit a slide
-        Attributes:
-            PARAMS:
-                - quiz_id
-                - round_id
-                - question_id
-        '''
-        question_wrapper = get_question_or_404(request.user, quiz_id, round_id, question_id)
-
-        question_wrapper.delete_slide(slide_id)
+        question_wrapper.delete_choice(choice_id)
 
         return redirect('quiz:edit-question', quiz_id=quiz_id, round_id=round_id, question_id=question_id)

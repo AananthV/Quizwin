@@ -37,14 +37,17 @@ class Quiz:
         self.quiz.delete()
 
 def create_quiz(user, quiz_info = {}):
+    quiz_info = filter_quiz_info(quiz_info)
+
     quiz_info['host_id'] = user.id
+
     return Quiz.create(quiz_info)
 
 def get_quiz(quiz):
     return Quiz(quiz)
 
 def get_quiz_or_404(user, quiz_id):
-    quiz = get_object_or_404(QuizModel, pk=quiz_id, host=user)
+    quiz = get_object_or_404(QuizModel, pk=quiz_id, host_id=user.id)
     return Quiz(quiz)
 
 def filter_quiz_info(quiz_info):

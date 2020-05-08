@@ -1,0 +1,38 @@
+<h2>Answer</h2>
+{% if answer %}
+    <table class="table table-hover table-responsive-sm">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Info</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <div class="collapse show answer-slide-{{ answer.id }}-collapse" id="answer-slide-{{ answer.id }}-view">
+                        {% include '../slides/view.html' with slide=answer.slide %}
+                    </div>
+                    <div class="collapse answer-slide-{{ answer.id }}-collapse" id="answer-slide-{{ answer.id }}-edit">
+                        {% include '../slides/edit.html' with slide=answer.slide edit_type='ANSWER' %}
+                    </div>
+                </td>
+                <td>
+                    <form id="answer-slide-{{ answer.id }}-delete" class="col-6" action="{% url 'quiz:delete-answer' quiz_id=quiz_id round_id=round_id question_id=question_id answer_id=answer.id %}" method="POST">{% csrf_token %}</form>
+                    <button type="button" class="btn badge badge-info" data-toggle="collapse" data-target=".answer-slide-{{ answer.id }}-collapse">Edit</button>
+                    <button type="submit" form="answer-slide-{{ answer.id }}-delete" class="btn badge badge-danger">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+{% else %}
+    <form class="form-inline" action="{% url 'quiz:create-answer' quiz_id=quiz_id round_id=round_id question_id=question_id %}" method="POST">{% csrf_token %}
+        <select class="custom-select my-1 mr-sm-2" name="type" id="answer-slide-type-select" required>
+            <option value="" selected>Answer type</option>
+            {% for value, label in slide_types.items %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-info">Add answer</button>
+    </form>
+{% endif %}

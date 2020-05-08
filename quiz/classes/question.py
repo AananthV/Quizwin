@@ -1,15 +1,17 @@
 from collections import Counter
 
-from django.forms import model_to_dict
 from django.db.models import F
+from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
 
-from quiz.models import Round, Question, QuestionSlide, NormalAnswer, Choice, ChoiceAnswer, OrderAnswer, QuestionScores, Score
-from quiz.classes.slide import get_slide, create_slide
-from quiz.constants import QuestionType, RoundType, QuestionClass
+from quiz.classes.slide import create_slide, get_slide
+from quiz.constants import QuestionClass, QuestionType, RoundType
+from quiz.models import (Category, Choice, ChoiceAnswer, NormalAnswer, OrderAnswer,
+                         Question, QuestionScores, QuestionSlide, Round, Score)
+
 
 class BaseQuestion:
-    editable_fields = ['type', 'points', 'degradation', 'multiplier', 'question_number', 'category']
+    editable_fields = ['type', 'description', 'points', 'degradation', 'multiplier', 'category_id']
 
     def __init__(self, question):
         self.question = question
@@ -23,14 +25,18 @@ class BaseQuestion:
         info = model_to_dict(self.question)
         return {
             **info,
-            'slides': [slide.info() for slide in self.slides],
-            'answer': self.answer(),
+            'class': self.question_class,
+            'slides': [{
+                **model_to_dict(qs),
+                'slide': slide.info(),
+            } for qs, slide in zip(self.slide_qs, self.slides)],
+            'answer': self.answer_info(),
         }
     
     def player_info(self):
         return model_to_dict(self.question)
 
-    def answer(self):
+    def answer_info(self):
         pass
 
     def award_points(self, user, points):
@@ -42,10 +48,12 @@ class BaseQuestion:
     
     @staticmethod
     def create(question_info):
-        return Question.objects.create(**question_info.question)
+        return Question.objects.create(**question_info)
 
     def edit(self, question_info):
-        self.question.__dict__.update(question_info.question)
+        if 'type' in question_info and question_info['type'] != self.question.type:
+            self.delete_answers()
+        self.question.__dict__.update(question_info)
         self.question.save()
 
     def delete_answers(self):
@@ -56,9 +64,11 @@ class BaseQuestion:
 
     def create_slide(self, slide_info):
         slide = create_slide(slide_info)
+        slide_number = self.slide_qs.count() + 1
         QuestionSlide.objects.create(
             question=self.question,
-            slide=slide
+            slide=slide,
+            slide_number=slide_number
         )
 
     def edit_slide(self, slide_id, slide_info):
@@ -79,6 +89,13 @@ class BaseQuestion:
         self.delete_slides()
         self.question.delete()
 
+    def get_next_slide_number(question_id):
+        rounds = Round.objects.filter(quiz_id=quiz_id)
+        if rounds.exists():
+            greatest_round = rounds.aggregate(Max('round_number'))
+            return greatest_round['round_number__max'] + 1
+        return 1
+
 class NormalQuestion(BaseQuestion):
     question_class = QuestionClass.SINGLE_ANSWER
 
@@ -91,9 +108,12 @@ class NormalQuestion(BaseQuestion):
         if self.answer.exists():
             self.answer_slide = get_slide(self.answer[0].slide)
 
-    def answer(self):
+    def answer_info(self):
         if self.answer.exists():
-            return self.answer_slide.info()
+            return {
+                **model_to_dict(self.answer[0]),
+                'slide': self.answer_slide.info()
+            }
         else:
             return None
 
@@ -101,7 +121,10 @@ class NormalQuestion(BaseQuestion):
         question_score = self.question.points * self.question.multiplier
         super().award_points(user, question_score)
 
-    def add_answer(self, answer_info):
+    def set_answer(self, answer_info):
+        if self.answer.exists():
+            # TODO: Return exception
+            pass
         answer_slide = create_slide(answer_info)
         answer = NormalAnswer.objects.create(
             question=self.question,
@@ -110,7 +133,8 @@ class NormalQuestion(BaseQuestion):
 
     def edit_answer(self, answer_info):
         if self.answer.exists():
-            self.answer_slide.edit(answer_info)
+            info = answer_info.get('info', '')
+            self.answer_slide.edit(info)
         else:
             # TODO: Return exception
             pass
@@ -138,7 +162,12 @@ class ChoiceQuestion(BaseQuestion):
 
     def host_info(self):
         info = super().host_info()
-        info['choices'] = [slide.info() for slide in self.choice_slides]
+        info['choices'] = [
+            {
+                **model_to_dict(choice),
+                'slide': slide.info(),
+            } for choice, slide in zip(self.choices, self.choice_slides)
+        ]
         return info
 
     def player_info(self):
@@ -155,11 +184,12 @@ class ChoiceQuestion(BaseQuestion):
         Choice.objects.create(
             question=self.question,
             slide=choice_slide,
-            choice_number = self.choices.count()
+            choice_number = choice_number
         )
 
     def edit_choice(self, choice_id, choice_info):
-        get_slide(self.get_choice_or_404(choice_id)).edit(choice_info)
+        info = choice_info.get('info', '')
+        get_slide(self.get_choice_or_404(choice_id).slide).edit(info)
 
     def delete_choice(self, choice_id):
         choice = self.get_choice_or_404(choice_id)
@@ -176,12 +206,13 @@ class ChoiceQuestion(BaseQuestion):
 class MCQuestion(ChoiceQuestion):
     def __init__(self, question):
         assert question.type == QuestionType.MCQ
+        super().__init__(question)
 
         self.choice_answer = ChoiceAnswer.objects.filter(question=self.question)
-        if choice_answer.exists():
+        if self.choice_answer.exists():
             self.answer = self.choice_answer[0].choice.choice_number
 
-    def answer(self):
+    def answer_info(self):
         if self.choice_answer.exists():
             return self.answer
         else:
@@ -200,7 +231,13 @@ class MCQuestion(ChoiceQuestion):
         question_points = question_points * degradation
         super().award_points(user, question_points)
 
-    def set_answer(self, choice_id):
+    def set_answer(self, answer_info):
+        try:
+            choice_id = answer_info.get('choice_id')
+        except e:
+            # TODO: Return exception
+            pass
+
         choice = self.get_choice_or_404(choice_id)
         ChoiceAnswer.objects.update_or_create(
             question=self.question, 
@@ -210,19 +247,18 @@ class MCQuestion(ChoiceQuestion):
 class OrderQuestion(ChoiceQuestion):
     def __init__(self, question):
         assert question.type == QuestionType.ORDERING
-
-        super.__init__(question)
+        super().__init__(question)
 
         self.choices = Choice.objects.filter(question=self.question)
         self.choice_slides = [get_slide(choice.slide) for choice in self.choices]
 
         self.order_answer = OrderAnswer.objects.filter(question=self.question)
         if self.order_answer.exists():
-            self.answer = self.order_answer[0].order
+            self.answer = [int(x) for x in self.order_answer[0].order.split(',')]
 
-    def answer(self):
+    def answer_info(self):
         if self.order_answer.exists():
-            return [int(x) for x in list(self.answer)]
+            return self.answer
         else:
             return None
     
@@ -243,8 +279,18 @@ class OrderQuestion(ChoiceQuestion):
         super().delete_choice(choice_id)
         self.order_answer.delete()
 
-    def set_answer(self, order):
-        counts = Counter([int(x) for x in list(order)])
+    def add_choice(self, choice_info):
+        super().add_choice(choice_info)
+        self.order_answer.delete()
+
+    def set_answer(self, answer_info):
+        try:
+            order = answer_info.get('order')
+        except e:
+            # TODO: Return exception
+            pass
+
+        counts = Counter([int(x) for x in order.split(',')])
         for i in range(len(self.choices)):
             if counts[i+1] != 1:
                 # TODO: Exception, invalid order
@@ -262,7 +308,7 @@ class OrderQuestion(ChoiceQuestion):
 
 questions = {
     QuestionType.NORMAL: NormalQuestion,
-    QuestionType.MCQ: ChoiceQuestion,
+    QuestionType.MCQ: MCQuestion,
     QuestionType.ORDERING: OrderQuestion,
 }
 
@@ -270,7 +316,7 @@ def get_question(question):
     return questions[question.type](question)
 
 def create_question(question_info):
-    return questions[question_info.type].create(question_info)
+    return questions[question_info['type']].create(question_info)
 
 def edit_question(question, question_info):
     questions[question.type](question).edit(question_info)
@@ -289,9 +335,13 @@ def create_question_or_404(user, quiz_id, round_id, question_info):
 
     question_info['round_id'] = round.id
     
-    if round.type == RoundType.BOARD and 'category' not in question_info:
-        # Bad request response
-        pass
+    if round.type == RoundType.BOARD:
+        if 'category_id' not in question_info:
+            # TODO: Bad request response
+            pass
+        if not Category.objects.filter(pk=question_info['category_id'], round_id=round_id).exists():
+            # TODO: Bad request response
+            pass
 
     if round.type == RoundType.SEQUENTIAL:
         last_question = Question.objects.filter(round=round).order_by('question_number').last()

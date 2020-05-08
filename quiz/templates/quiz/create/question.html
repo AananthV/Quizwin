@@ -1,4 +1,46 @@
 {% extends "base.html" %}
 
+{% load dict_extras %}
+
 {% block content %}
+    <nav aria-label="breadcrumb mt-2">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'quiz:profile' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'quiz:edit-quiz' quiz_id=quiz_id %}">Quiz</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'quiz:edit-round' quiz_id=quiz_id round_id=round_id %}">Round</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Question</li>
+        </ol>
+    </nav>
+    <h1 class="text-center">Edit Question</h1>
+    <hr>
+    <h2>General</h2>
+    <form action="{% url 'quiz:edit-question' quiz_id=quiz_id round_id=round_id question_id=question.id %}" method="POST">{% csrf_token %}
+        <div class="form-group">
+            <label for="question-type-select">Type</label>
+            <select class="custom-select my-1 mr-sm-2" name="type" id="question-type-select" value="{{ question.type }}" required>
+                <option value="" selected>-</option>
+                {% for value, label in question_types.items %}
+                    <option value="{{ value }}" {% if question.type is value %} selected {% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <small class="text-danger">Changing type will reset the answer</small>
+        </div>
+        <div class="form-group">
+            <label for="question-description-input">Description</label>
+            <input name="description" type="text" class="form-control" id="question-description-input" value="{{ question.description }}">
+            <small>A short description of this question</small>
+        </div>
+        <div class="form-group">
+            <label for="question-points-input">Points</label>
+            <input name="points" type="number" class="form-control" id="question-points-input" value="{{ question.points }}">
+        </div>
+        <div class="form-action">
+            <button type="submit" class="btn btn-info">Save</button>
+        </div>
+    </form>
+    <hr>
+    <h2>Slides</h2>
+    {% include "./slides/slide_table.html" %}
+    <hr>
+    {% include './answers/answer.html' %}
 {% endblock content %}

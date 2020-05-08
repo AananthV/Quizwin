@@ -1,0 +1,22 @@
+<h2>Categories</h2>
+<div class="accordion" id="category-accordion">
+    {% for category in round.categories %}
+        <div class="card">
+            <div class="card-header" id="category-{{ category.id }}-heading" data-toggle="collapse" data-target="#category-{{ category.id }}-questions" aria-expanded="false" aria-controls="category-{{ category.id }}-questions">
+                {{ category.name }}
+            </div>
+
+            <div id="category-{{ category.id }}-questions" class="collapse" aria-labelledby="category-{{ category.id }}-heading" data-parent="#category-accordion">
+                <div class="card-body">
+                    <h3>Questions</h3>
+                    {% include './question_table.html' with questions=category.questions category=category %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<form class="form-inline" action="{% url 'quiz:create-category' quiz_id=quiz_id round_id=round_id %}" method="POST">{% csrf_token %}
+    <label class="sr-only" for="category-name-input">Name</label>
+    <input type="text" name="name" class="form-control my-2 mr-sm-2" id="category-name-input" placeholder="Untitled" required>
+    <button type="submit" class="btn btn-info my-2">Add Category</button>
+</form>

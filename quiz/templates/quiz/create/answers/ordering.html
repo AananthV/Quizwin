@@ -1,0 +1,28 @@
+{% load js %}
+
+<h2>Answer</h2>
+<form class="form" action="{% url 'quiz:create-answer' quiz_id=quiz_id round_id=round_id question_id=question_id %}" onsubmit="updateOrderValue()" method="POST">{% csrf_token %}
+    <div id="order-sortable">
+        {% for choice in choices  %}
+            <div data-id="{{ choice.choice_number }}" class="col-1 btn btn-outline-secondary" style="cursor: grab;">{{ choice.choice_number }}</div>
+        {% endfor %}
+    </div>
+    {% if question.answer is None %}
+        <small class="text-danger">Order is not set.</small>
+    {% endif %}
+    <small>Drag and drop to get the correct sequence</small>
+    <br>
+    <input type="hidden" id="order-answer-input" value="" name="order"/>
+    <button type="submit" class="btn btn-info my-2">Set Order</button>
+</form>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js" integrity="sha256-9D6DlNlpDfh0C8buQ6NXxrOdLo/wqFUwEB1s70obwfE=" crossorigin="anonymous"></script>
+<script>
+    let order_sortable = document.getElementById('order-sortable')
+    let sortable = Sortable.create(order_sortable)
+    {% if question.answer is not None %}
+        sortable.sort({{ question.answer | js }})
+    {% endif %}
+    let updateOrderValue = () => {
+        document.getElementById('order-answer-input').value = sortable.toArray().join(',')
+    }
+</script>

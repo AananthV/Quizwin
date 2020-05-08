@@ -1,0 +1,5 @@
+{% if question.type == QuestionType.NORMAL %}
+    {% include "./normal.html" with answer=question.answer %}
+{% elif question.class == QuestionClass.CHOICE_ANSWER %}
+    {% include './choice.html' with choices=question.choices %}
+{% endif %}
