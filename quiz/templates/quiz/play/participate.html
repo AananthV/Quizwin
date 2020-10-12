@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% load js %}
+{% load static %}
+
+{% block content %}
+    <link rel="stylesheet" href="{% static 'quiz/css/buzzer.css' %}">
+    <div class="text-center">
+        <h1>Participating</h1>
+        <h2>Room Code: {{ room_id }}</h2>
+    </div>
+    <hr>
+    <div id="buzzer" class="unlocked">buzz</div>
+    <div id="order-container" class="text-center d-none">
+        <ul id="order-sortable" class="list-group"></ul>
+        <button type="button" id="order-submit-button" class="btn btn-success">Submit</button>
+    </div>
+    <div id="choice-container" class="text-center d-none">
+        <div id="choices"></div>
+        <button type="button" id="choice-submit-button" class="btn btn-success">Submit</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js" integrity="sha256-9D6DlNlpDfh0C8buQ6NXxrOdLo/wqFUwEB1s70obwfE=" crossorigin="anonymous"></script>
+    <script type="module">
+        import { ParticipantSocket } from "{% static 'quiz/js/sockets/participant.js' %}"
+        const socket = new ParticipantSocket({{ room_id | js }}, {{ request.user.id | js }})
+    </script>
+{% endblock content %}

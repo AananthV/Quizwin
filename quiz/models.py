@@ -10,8 +10,6 @@ class Quiz(TimestampModel):
     name = models.CharField(max_length=64, default='Untitled Quiz')
     host = models.ForeignKey(User, on_delete=models.CASCADE)
     secret = models.CharField(max_length=32, default='')
-    started = models.BooleanField(default=False)
-    ended = models.BooleanField(default=False)
 
 class Round(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
@@ -32,6 +30,12 @@ class Text(models.Model):
 
 class Image(models.Model):
     image = models.URLField()
+
+class Audio(models.Model):
+    audio = models.URLField()
+
+class Video(models.Model):
+    video = models.URLField()
 
 class Slide(models.Model):
     type = models.CharField(max_length=1, choices=SlideType.choices)
@@ -79,9 +83,23 @@ class OrderAnswer(models.Model):
 class QuestionScores(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    score = models.TextField(max_length=10)
+    score = models.IntegerField(default=0)
 
 class Score(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
+
+class QuizRoom(models.Model):
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+
+class QuizParticipant(models.Model):
+    room = models.ForeignKey(QuizRoom, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+class QuizState(models.Model):
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
+    started = models.BooleanField(default=False)
+    ended = models.BooleanField(default=False)

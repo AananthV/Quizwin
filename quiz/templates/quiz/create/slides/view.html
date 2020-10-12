@@ -2,4 +2,8 @@
     {% include "./view/text.html" %}
 {% elif slide.type == SlideType.IMAGE %}
     {% include "./view/image.html" %}
+{% elif slide.type == SlideType.AUDIO %}
+    {% include "./view/audio.html" %}
+{% elif slide.type == SlideType.VIDEO %}
+    {% include "./view/video.html" %}
 {% endif %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% load js %}
+{% load static %}
+
+{% block content %}
+    <div class="text-center">
+        <h1>Hosting</h1>
+        <h2>Room Code: {{ room_id }}</h2>
+    </div>
+    <ul class="nav nav-tabs nav-justified" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="quiz-tab" data-toggle="tab" href="#quiz" role="tab" aria-controls="quiz" aria-selected="true">Quiz</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="round-tab" data-toggle="tab" href="#round" role="tab" aria-controls="round" aria-selected="false">Round</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="question-tab" data-toggle="tab" href="#question" role="tab" aria-controls="question" aria-selected="false">Question</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="participants-tab" data-toggle="tab" href="#participants" role="tab" aria-controls="participants" aria-selected="false">Participants</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="buzzer-tab" data-toggle="tab" href="#buzzer" role="tab" aria-controls="buzzer" aria-selected="false">Buzzer</a>
+        </li>
+    </ul>
+    <div class="tab-content mt-2" id="myTabContent">
+        <div class="tab-pane fade show active text-center" id="quiz" role="tabpanel" aria-labelledby="quiz-tab">
+            <div id="quiz-info"></div>
+            <button id="next-round-button" class="btn btn-info mb-2 d-none">Next Round</button>
+            <br>
+            <button id="start-quiz-button" class="btn btn-secondary d-none">Start Quiz</button>
+            <button id="end-quiz-button" class="btn btn-danger d-none">End Quiz</button>
+        </div>
+        <div class="tab-pane fade text-center" id="round" role="tabpanel" aria-labelledby="round-tab"></div>
+        <div class="tab-pane fade text-center" id="question" role="tabpanel" aria-labelledby="question-tab"></div>
+        <div class="tab-pane fade text-center" id="participants" role="tabpanel" aria-labelledby="participants-tab">
+            <table class="table table-hover">
+                <thead class="thead-dark">
+                    <th scope="col">#</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Score</th>
+                </thead>
+                <tbody id="participants-tbody"></tbody>
+            </table>           
+        </div>
+        <div class="tab-pane fade text-center" id="buzzer" role="tabpanel" aria-labelledby="buzzer-tab">
+            <div class="mb-2">
+                <button id="buzzer-lock-button" class="btn btn-danger">Lock</button>
+                <button id="buzzer-unlock-button" class="btn btn-success d-none">Unlock</button>
+                <button id="buzzer-reset-button" class="btn btn-info">Reset</button>
+            </div>
+            <table class="table table-hover">
+                <thead class="thead-dark">
+                    <th scope="col">#</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Answer</th>
+                </thead>
+                <tbody id="buzzer-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { HostSocket } from "{% static 'quiz/js/sockets/host.js' %}"
+        const socket = new HostSocket({{ room_id | js }})
+    </script>
+{% endblock content %}

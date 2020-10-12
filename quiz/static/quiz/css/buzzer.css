@@ -1,0 +1,53 @@
+#buzzer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 50%;
+    width: 33vw;
+    height: 33vw;
+    min-width: 300px;
+    min-height: 300px;
+    font-size: 3em;
+    text-transform: uppercase;
+    color: var(--light);
+}
+
+#buzzer.unlocked {
+    background-color: var(--success);
+    box-shadow: 0px 0px 10px #333;
+}
+
+#buzzer.unlocked:active {
+    box-shadow: none;
+}
+
+#buzzer.locked {
+    background-color: var(--warning);
+    color: var(--dark)
+}
+
+#buzzer.buzzed {
+    background-color: var(--danger);
+}
+
+.labl {
+    display : block;
+    width: 100%;
+}
+.labl > input{ /* HIDE RADIO */
+    visibility: hidden; /* Makes input not-clickable */
+    position: absolute; /* Remove input from document flow */
+}
+.labl > input + div{ /* DIV STYLES */
+    cursor:pointer;
+}
+.labl > input:checked + div{ /* (RADIO CHECKED) DIV STYLES */
+    background-color: #ffd6bb;
+    border: 1px solid var(--success);
+}
+
+#order-sortable li {
+    cursor: grab;
+}

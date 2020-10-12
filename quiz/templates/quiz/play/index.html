@@ -2,14 +2,14 @@
 
 {% block content %}
     <h1 class="text-center">Quizwin</h1>
-    <form action="">
+    <form action="{% url 'quiz:join' %}" method="POST">{% csrf_token %}
         <div class="form-group">
             <label for="room-code-input">Room Code</label>
-            <input type="number" class="form-control" id="room-code-input">
+            <input name="room_id" type="number" class="form-control" id="room-code-input">
         </div>
         <div class="form-group">
             <label for="room-password-input">Password</label>
-            <input type="password" class="form-control" id="room-password-input">
+            <input name="quiz_secret" type="password" class="form-control" id="room-password-input">
         </div>
         <button type="submit" class="btn btn-success btn-lg btn-block">Enter</button>
     </form>

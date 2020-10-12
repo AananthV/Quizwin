@@ -1,6 +1,6 @@
 from django.forms import model_to_dict
 
-from quiz.models import Text, Image, Slide
+from quiz.models import Text, Image, Audio, Video, Slide
 from quiz.constants import SlideType
 
 class BaseSlide:
@@ -23,7 +23,6 @@ class TextSlide(BaseSlide):
 
         super().__init__(slide)
 
-        from quiz.models import Text
         self.text = Text.objects.get(pk=slide.fk)
     
     def info(self):
@@ -50,7 +49,6 @@ class ImageSlide(BaseSlide):
 
         super().__init__(slide)
 
-        from quiz.models import Image
         self.image = Image.objects.get(pk=slide.fk)
     
     def info(self):
@@ -71,9 +69,63 @@ class ImageSlide(BaseSlide):
         super().delete()
         self.image.delete()
 
+class AudioSlide(BaseSlide):
+    def __init__(self, slide):
+        assert slide.type == SlideType.AUDIO
+
+        super().__init__(slide)
+
+        self.audio = Audio.objects.get(pk=slide.fk)
+    
+    def info(self):
+        base_info = super().info()
+        base_info['audio'] = self.audio.audio
+        return base_info
+
+    @staticmethod
+    def create(audio):
+        audio_field = Audio.objects.create(audio=audio)
+        return BaseSlide.create('A', audio_field.id)
+
+    def edit(self, audio):
+        self.audio.audio = audio
+        self.audio.save()
+
+    def delete(self):
+        super().delete()
+        self.audio.delete()
+
+class VideoSlide(BaseSlide):
+    def __init__(self, slide):
+        assert slide.type == SlideType.VIDEO
+
+        super().__init__(slide)
+
+        self.video = Video.objects.get(pk=slide.fk)
+    
+    def info(self):
+        base_info = super().info()
+        base_info['video'] = self.video.video
+        return base_info
+
+    @staticmethod
+    def create(video):
+        video_field = Video.objects.create(video=video)
+        return BaseSlide.create('V', video_field.id)
+
+    def edit(self, video):
+        self.video.video = video
+        self.video.save()
+
+    def delete(self):
+        super().delete()
+        self.video.delete()
+
 slides = {
     SlideType.TEXT: TextSlide,
-    SlideType.IMAGE: ImageSlide
+    SlideType.IMAGE: ImageSlide,
+    SlideType.AUDIO: AudioSlide,
+    SlideType.VIDEO: VideoSlide
 }
 
 def get_slide(slide):

@@ -1,5 +1,9 @@
 django
+django-rest-auth
 django-allauth
 django-bootstrap-form
 django-environ
 mysqlclient
+channels
+channels_redis
+whitenoise

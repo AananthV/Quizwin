@@ -28,8 +28,7 @@ SECRET_KEY = str(os.environ.get('APP_SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (os.environ.get('DEBUG') == 'True')
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['localhost', 'localhost:3000', '192.168.1.69', 'aananthv.ddns.net']
 
 # Application definition
 
@@ -41,6 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    # 'rest_framework',
+    # 'rest_framework.authtoken',
+    # 'rest_auth',
+    'channels',
     'bootstrapform',
     'allauth',
     'allauth.account',
@@ -50,6 +53,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -83,7 +87,17 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Quizwin.wsgi.application'
+# WSGI_APPLICATION = 'Quizwin.wsgi.application'
+ASGI_APPLICATION = "Quizwin.routing.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 
 # Database
@@ -152,3 +166,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

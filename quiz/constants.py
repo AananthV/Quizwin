@@ -15,6 +15,8 @@ class QuestionType(models.TextChoices):
 class SlideType(models.TextChoices):
     TEXT = 'T', _('Text')
     IMAGE = 'I', _('Image')
+    AUDIO = 'A', _('Audio')
+    VIDEO = 'V', _('Video')
 
 class QuestionClass(models.TextChoices):
     SINGLE_ANSWER = 'S'

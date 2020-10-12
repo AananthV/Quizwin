@@ -11,17 +11,17 @@
             <tr>
                 <th scope="row">{{ qs.slide_number }}</th>
                 <td>
-                    <div class="collapse show slide-{{ slide.id }}-collapse" id="slide-{{ slide.id }}-view">
+                    <div class="collapse show slide-{{ qs.id }}-collapse" id="slide-{{ qs.id }}-view">
                         {% include './view.html' with slide=qs.slide %}
                     </div>
-                    <div class="collapse slide-{{ slide.id }}-collapse" id="slide-{{ slide.id }}-edit">
+                    <div class="collapse slide-{{ qs.id }}-collapse" id="slide-{{ qs.id }}-edit">
                         {% include './edit.html' with slide=qs.slide %}
                     </div>
                 </td>
                 <td>
-                    <form id="slide-{{ slide.id }}-delete" class="col-6" action="{% url 'quiz:delete-slide' quiz_id=quiz_id round_id=round_id question_id=question_id slide_id=qs.id %}" method="POST">{% csrf_token %}</form>
-                    <button type="button" class="btn badge badge-info" data-toggle="collapse" data-target=".slide-{{ slide.id }}-collapse">Edit</button>
-                    <button type="submit" form="slide-{{ slide.id }}-delete" class="btn badge badge-danger">Delete</button>
+                    <form id="slide-{{ qs.id }}-delete" class="col-6" action="{% url 'quiz:delete-slide' quiz_id=quiz_id round_id=round_id question_id=question_id slide_id=qs.id %}" method="POST">{% csrf_token %}</form>
+                    <button type="button" class="btn badge badge-info" data-toggle="collapse" data-target=".slide-{{ qs.id }}-collapse">Edit</button>
+                    <button type="submit" form="slide-{{ qs.id }}-delete" class="btn badge badge-danger">Delete</button>
                 </td>
             </tr>
         {% endfor %}

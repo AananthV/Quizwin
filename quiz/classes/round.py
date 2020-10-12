@@ -59,9 +59,16 @@ class SequentialRound(BaseRound):
            'questions':  [model_to_dict(q) for q in self.questions]
         }
 
-    # TODO depending on how sockets work
-    def next_question(self):
-        pass
+    def next_question(self, quiz_state):
+        if quiz_state.question == None:
+            quiz_state.question_id = self.questions[0].id
+        elif quiz_state.question.question_number == self.questions.count():
+            # TODO: Raise exception
+            return
+        else:
+            quiz_state.question_id = self.questions[quiz_state.question.question_number].id
+
+        quiz_state.save()
     
 class BoardRound(BaseRound):
     def __init__(self, round):
@@ -105,12 +112,27 @@ class BoardRound(BaseRound):
 
     def delete(self):
         self.categories.delete()
-        super().delete()    
+        super().delete()   
+
+    def choose_question(self, quiz_state, question_id):
+        question = self.questions.filter(pk=question_id, done=False)
+        if not question.exists():
+            # TODO: Raise Exception
+            return
+        q = question[0]
+        q.done = True
+        q.save()
+
+        quiz_state.question_id = q.id
+        quiz_state.save()
 
 rounds = {
     RoundType.SEQUENTIAL: SequentialRound,
     RoundType.BOARD: BoardRound
 }
+
+def get_round_by_id(round_id):
+    return get_round(get_object_or_404(Round, pk=round_id))
 
 def get_round(round):
     return rounds[round.type](round)

@@ -39,11 +39,14 @@ class BaseQuestion:
     def answer_info(self):
         pass
 
-    def award_points(self, user, points):
-        QuestionScores.objects.create(user=user, question=self.question, score=points)
+    def award_points(self, user_id, points):
+        if QuestionScores.objects.filter(user_id=user_id, question_id=self.question.id).exists():
+            return
+        
+        QuestionScores.objects.create(user_id=user_id, question_id=self.question.id, score=points)
 
-        quiz_score = Score.objects.get_or_create(quiz=self.question.round.quiz, user=user)
-        quiz_score.score += F('score') + points
+        quiz_score, _ = Score.objects.get_or_create(quiz_id=self.question.round.quiz_id, user_id=user_id)
+        quiz_score.score = F('score') + points
         quiz_score.save()
     
     @staticmethod
@@ -117,11 +120,11 @@ class NormalQuestion(BaseQuestion):
         else:
             return None
 
-    def award_points(self, user, sign=True):
+    def award_points(self, user_id, sign=True):
         question_score = self.question.points * self.question.multiplier
         if not sign:
             question_score = -question_score
-        super().award_points(user, question_score)
+        super().award_points(user_id, question_score)
 
     def set_answer(self, answer_info):
         if self.answer.exists():
@@ -165,10 +168,10 @@ class ChoiceQuestion(BaseQuestion):
     def award_points(self, user, sign=True):
         question_points = self.question.points * self.question.multiplier
         
-        num_answered = QuestionScores.objects.filter(question=question).count()
+        num_answered = QuestionScores.objects.filter(question=self.question, score__gte=0).count()
 
         if sign:
-            question_points *= (1 - self.question.round.degradation) ** num_answered
+            question_points = round(question_points * ((1 - self.question.round.degradation) ** num_answered))
         else:
             question_points = -question_points
 
@@ -233,7 +236,7 @@ class MCQuestion(ChoiceQuestion):
             return None
 
     def award_points(self, user, answer):
-        super().award_points(user, answer == self.answer)
+        super().award_points(user, int(answer) == self.answer)
 
     def set_answer(self, answer_info):
         try:
@@ -267,7 +270,7 @@ class OrderQuestion(ChoiceQuestion):
             return None
     
     def award_points(self, user, answer):
-        super.award_points(user, answer == self.answer)
+        super().award_points(user, answer == self.answer)
 
     def delete_choice(self, choice_id):
         super().delete_choice(choice_id)
@@ -305,6 +308,9 @@ questions = {
     QuestionType.MCQ: MCQuestion,
     QuestionType.ORDERING: OrderQuestion,
 }
+
+def get_question_by_id(question_id):
+    return get_question(get_object_or_404(Question, pk=question_id))
 
 def get_question(question):
     return questions[question.type](question)

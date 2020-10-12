@@ -1,12 +1,18 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView
 
-from quiz.views import join, profile, quiz, round, category, question, slide, answer, choice
+from quiz.views import join, profile, quiz, round, category, question, slide, answer, choice, host, join
 
 urlpatterns = [
     path('', join.JoinView.as_view(), name="join"),
 
     path('profile/', profile.ProfileView.as_view(), name='profile'),
+
+    # Play
+    path('start/<int:quiz_id>', host.StartQuizView.as_view(), name="start"),
+    path('host/<int:room_id>/', host.HostView.as_view(), name="host"),
+    path('join/<int:room_id>/', join.JoinView.as_view(), name="join"),
+    path('participate/<int:room_id>/', join.ParticipateView.as_view(), name="participate"),
 
     # Quiz
     path('create/quiz/', quiz.CreateQuizView.as_view(), name="create-quiz"),
@@ -38,6 +44,7 @@ urlpatterns = [
     path('edit/quiz-<int:quiz_id>/round-<int:round_id>/question-<int:question_id>/answer-<int:answer_id>/', answer.EditAnswerView.as_view(), name="edit-answer"),
     path('delete/quiz-<int:quiz_id>/round-<int:round_id>/question-<int:question_id>/answer-<int:answer_id>/', answer.DeleteAnswerView.as_view(), name="delete-answer"), 
 
+    # Choice
     path('create/quiz-<int:quiz_id>/round-<int:round_id>/question-<int:question_id>/choice/', choice.CreateChoiceView.as_view(), name="create-choice"),
     path('edit/quiz-<int:quiz_id>/round-<int:round_id>/question-<int:question_id>/choice-<int:choice_id>/', choice.EditChoiceView.as_view(), name="edit-choice"),
     path('delete/quiz-<int:quiz_id>/round-<int:round_id>/question-<int:question_id>/choice-<int:choice_id>/', choice.DeleteChoiceView.as_view(), name="delete-choice"), 

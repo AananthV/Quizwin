@@ -11,6 +11,10 @@
         {% include "./edit/text.html" %}
     {% elif slide.type == SlideType.IMAGE %}
         {% include "./edit/image.html" %}
+    {% elif slide.type == SlideType.AUDIO %}
+        {% include "./edit/audio.html" %}
+    {% elif slide.type == SlideType.VIDEO %}
+        {% include "./edit/video.html" %}
     {% endif %}
     <button type="submit" class="btn btn-info">Save</button>
 </form>
